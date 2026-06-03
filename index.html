@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sofía – Tu viaje seguro 🌙</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d14;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --text: #e8e4f0;
+    --muted: #7a758f;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
+    --red: #f87171;
+    --accent: #a78bfa;
+    --accent2: #7c3aed;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 90px;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    width: 100%;
+    padding: 28px 24px 14px;
+    text-align: center;
+  }
+  header::after {
+    content: '';
+    display: block;
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    margin: 10px auto 0;
+    border-radius: 2px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--accent) 0%, #e879f9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+  #event-name-header {
+    font-size: 0.78rem; color: var(--accent);
+    margin-top: 5px; min-height: 18px; font-weight: 500;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #0f0f18;
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab {
+    flex: 1; padding: 12px 4px 10px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    cursor: pointer;
+    border: none; background: none;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab .tab-icon { font-size: 1.3rem; }
+  .tab.active { color: var(--accent); }
+  .tab.active .tab-icon { filter: drop-shadow(0 0 6px var(--accent)); }
+
+  /* ── Páginas ── */
+  .page { display: none; width: 100%; }
+  .page.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    width: 92%; max-width: 420px;
+    margin: 14px auto 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; margin-bottom: 14px;
+  }
+  .section-label {
+    font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* ── Semáforo ── */
+  .semaforo {
+    display: flex; gap: 10px;
+    justify-content: center; margin-bottom: 14px;
+  }
+  .dot {
+    width: 48px; height: 48px; border-radius: 50%;
+    opacity: 0.18;
+    transition: opacity 0.5s, box-shadow 0.5s, transform 0.3s;
+    border: 2px solid transparent;
+  }
+  .dot.verde    { background: var(--green); }
+  .dot.amarillo { background: var(--yellow); }
+  .dot.naranja  { background: var(--orange); }
+  .dot.rojo     { background: var(--red); }
+  .dot.active   { opacity: 1; transform: scale(1.1); }
+  .dot.verde.active    { box-shadow: 0 0 20px var(--green);  border-color: var(--green); }
+  .dot.amarillo.active { box-shadow: 0 0 20px var(--yellow); border-color: var(--yellow); }
+  .dot.naranja.active  { box-shadow: 0 0 20px var(--orange); border-color: var(--orange); }
+  .dot.rojo.active     { box-shadow: 0 0 20px var(--red);    border-color: var(--red); animation: pulse-red 1.4s infinite; }
+  @keyframes pulse-red {
+    0%,100% { box-shadow: 0 0 20px var(--red); }
+    50%     { box-shadow: 0 0 36px #ff0000; }
+  }
+  #estado-msg  { text-align: center; font-size: 0.95rem; font-weight: 500; transition: color 0.4s; }
+  #consejo     { text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 5px; line-height: 1.5; min-height: 32px; }
+
+  /* ── Progreso ── */
+  .counter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .units-badge {
+    background: var(--border); border-radius: 20px;
+    padding: 4px 13px; font-size: 0.8rem;
+    color: var(--accent); font-weight: 500;
+  }
+  .progress-bar-bg {
+    width: 100%; height: 8px; background: var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 16px;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 8px;
+    transition: width 0.6s ease, background 0.6s;
+    background: var(--green); width: 0%;
+  }
+
+  /* ── Bebidas ── */
+  .drink-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 9px; margin-bottom: 12px;
+  }
+  .drink-btn {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 13px 8px;
+    cursor: pointer; text-align: center;
+    transition: border-color 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .drink-btn:active { transform: scale(0.95); }
+  .drink-btn:hover  { border-color: var(--accent); }
+  .drink-btn .emoji { font-size: 1.6rem; display: block; margin-bottom: 3px; }
+  .drink-btn .name  { font-size: 0.7rem; color: var(--muted); }
+  .drink-btn .units { font-size: 0.65rem; color: var(--accent); margin-top: 2px; }
+
+  .btn-water {
+    width: 100%;
+    background: transparent; border: 1.5px dashed #2a6080;
+    border-radius: 13px; padding: 11px;
+    color: #60b8d0; font-size: 0.83rem;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s;
+  }
+  .btn-water:active { background: #1a2530; }
+
+  /* ── Log ── */
+  #log-list {
+    display: flex; flex-direction: column; gap: 7px;
+    max-height: 200px; overflow-y: auto;
+  }
+  #log-list::-webkit-scrollbar { width: 3px; }
+  #log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .log-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg); border-radius: 10px; padding: 9px 13px;
+    animation: slide-in 0.3s ease;
+  }
+  @keyframes slide-in { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+  .log-left { display: flex; align-items: center; gap: 9px; }
+  .log-name  { font-size: 0.8rem; }
+  .log-time  { font-size: 0.7rem; color: var(--muted); }
+  .log-units { font-size: 0.7rem; color: var(--accent); }
+  .log-item.agua .log-name { color: #60b8d0; }
+  .log-empty { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 8px 0; }
+
+  #tiempo-label { text-align: center; font-size: 0.73rem; color: var(--muted); margin-top: 8px; }
+
+  /* ── Emociones ── */
+  .emotion-subtitle { font-size: 0.75rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  .emotion-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 7px; margin-bottom: 12px;
+  }
+  .emotion-btn {
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 13px; padding: 11px 5px;
+    cursor: pointer; text-align: center;
+    transition: border-color 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .emotion-btn:active { transform: scale(0.93); }
+  .emotion-btn.selected { border-color: var(--accent); background: #1e1730; }
+  .emotion-btn .e-emoji { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+  .emotion-btn .e-name  { font-size: 0.6rem; color: var(--muted); }
+  .emotion-btn.selected .e-name { color: var(--accent); }
+  .emotion-alert {
+    display: none; background: #1e1220;
+    border: 1px solid #5b2a4a; border-radius: 13px;
+    padding: 13px 15px;
+    animation: slide-in 0.3s ease;
+  }
+  .emotion-alert.show { display: block; }
+  .ea-title { font-size: 0.8rem; font-weight: 500; color: #e879f9; margin-bottom: 4px; }
+  .ea-text  { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+  .emotion-tip-badge {
+    display: inline-block; background: var(--border);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.63rem; color: var(--accent); margin-top: 5px;
+  }
+
+  /* ── Botones acción ── */
+  .btn-row { display: flex; gap: 9px; width: 92%; max-width: 420px; margin: 14px auto 0; }
+  .btn-action {
+    flex: 1; background: transparent;
+    border: 1.5px solid var(--border); border-radius: 13px;
+    padding: 12px; color: var(--muted);
+    font-size: 0.78rem; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-close-event {
+    width: 92%; max-width: 420px;
+    margin: 14px auto 0; display: block;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none; border-radius: 16px; padding: 15px;
+    color: white; font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 500;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Historial ── */
+  .hist-empty {
+    text-align: center; color: var(--muted);
+    font-size: 0.85rem; padding: 40px 20px; line-height: 1.8;
+  }
+  .hist-item {
+    width: 92%; max-width: 420px;
+    margin: 12px auto 0;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 18px 16px;
+    animation: slide-in 0.3s ease;
+  }
+  .hist-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .hist-name { font-family: 'Playfair Display', serif; font-size: 1rem; }
+  .hist-date { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .hist-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; margin-left: 10px;
+  }
+  .hist-dot.verde    { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .hist-dot.amarillo { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+  .hist-dot.naranja  { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+  .hist-dot.rojo     { background: var(--red);    box-shadow: 0 0 10px var(--red); }
+  .hist-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hist-stat {
+    background: var(--bg); border-radius: 10px;
+    padding: 6px 12px; font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .hist-stat span { color: var(--accent); font-weight: 500; }
+  .hist-emotion {
+    font-size: 0.72rem; color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ── Resumen viaje ── */
+  .trip-hero {
+    width: 92%; max-width: 420px;
+    margin: 14px auto 0;
+    background: linear-gradient(135deg, #1a1230 0%, #0f1a2e 100%);
+    border: 1px solid var(--border); border-radius: 24px;
+    padding: 24px 20px; text-align: center;
+  }
+  .trip-hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; margin-bottom: 4px;
+  }
+  .trip-hero p { font-size: 0.78rem; color: var(--muted); }
+  .trip-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-top: 18px;
+  }
+  .trip-stat {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 16px 10px; text-align: center;
+  }
+  .trip-stat .ts-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; color: var(--accent);
+    line-height: 1;
+  }
+  .trip-stat .ts-label { font-size: 0.68rem; color: var(--muted); margin-top: 4px; }
+
+  .trend-bars { margin-top: 8px; }
+  .trend-bar-row {
+    display: flex; align-items: center;
+    gap: 8px; margin-bottom: 7px;
+  }
+  .trend-bar-label { font-size: 0.7rem; color: var(--muted); width: 90px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trend-bar-bg { flex: 1; height: 8px; background: var(--border); border-radius: 8px; overflow: hidden; }
+  .trend-bar-fill { height: 100%; border-radius: 8px; transition: width 0.8s ease; }
+  .trend-bar-val { font-size: 0.68rem; color: var(--accent); width: 36px; text-align: right; flex-shrink: 0; }
+
+  .insight-card {
+    width: 92%; max-width: 420px;
+    margin: 12px auto 0;
+    background: #1a1230; border: 1px solid #3d2b6b;
+    border-radius: 18px; padding: 16px 18px;
+  }
+  .insight-card .ic-title { font-size: 0.75rem; color: var(--accent); margin-bottom: 6px; font-weight: 500; }
+  .insight-card .ic-text  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── Modales ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78); z-index: 100;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-overlay.show { display: flex; animation: fade-in 0.2s; }
+  @keyframes fade-in { from { opacity:0 } to { opacity:1 } }
+  .modal {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 24px; padding: 28px 22px;
+    max-width: 340px; width: 100%; text-align: center;
+  }
+  .modal .modal-emoji { font-size: 2.6rem; margin-bottom: 10px; }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 8px; }
+  .modal p  { font-size: 0.83rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+  .modal-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none; border-radius: 13px; padding: 13px;
+    color: white; font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 500;
+    cursor: pointer; margin-bottom: 9px;
+  }
+  .modal-btn-secondary {
+    width: 100%; background: transparent;
+    border: 1.5px solid var(--border); border-radius: 13px;
+    padding: 11px; color: var(--muted);
+    font-size: 0.83rem; font-family: 'DM Sans', sans-serif; cursor: pointer;
+  }
+  .setup-input {
+    width: 100%; background: var(--bg);
+    border: 1.5px solid var(--border); border-radius: 11px;
+    padding: 11px 15px; color: var(--text);
+    font-size: 0.88rem; font-family: 'DM Sans', sans-serif;
+    margin-bottom: 12px; outline: none;
+  }
+  .setup-input:focus { border-color: var(--accent); }
+  .setup-label { font-size: 0.73rem; color: var(--muted); margin-bottom: 5px; text-align: left; display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Tu viaje seguro ✨</h1>
+  <p>Hola, Sofía 🌙</p>
+  <div id="event-name-header">Sin evento activo</div>
+</header>
+
+<!-- ═══════════════ PÁGINA 1: ESTA NOCHE ═══════════════ -->
+<div class="page active" id="page-night">
+
+  <!-- Semáforo -->
+  <div class="card" style="overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#7c3aed 0%,transparent 70%);opacity:.15"></div>
+    <div class="section-label" style="text-align:center">Estado actual</div>
+    <div class="semaforo">
+      <div class="dot verde active"    id="dot-verde"></div>
+      <div class="dot amarillo"        id="dot-amarillo"></div>
+      <div class="dot naranja"         id="dot-naranja"></div>
+      <div class="dot rojo"            id="dot-rojo"></div>
+    </div>
+    <div id="estado-msg" style="color:var(--green)">🟢 Todo bien, disfruta la noche</div>
+    <div id="consejo">Estás dentro del límite. Recuerda hidratarte entre tragos.</div>
+  </div>
+
+  <!-- Contador + bebidas -->
+  <div class="card">
+    <div class="counter-row">
+      <span class="card-title" style="margin-bottom:0">Mis tragos</span>
+      <span class="units-badge" id="units-count">0 UA</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+
+    <div class="drink-grid">
+      <button class="drink-btn" onclick="addDrink('Cerveza 🍺',1)">
+        <span class="emoji">🍺</span><span class="name">Cerveza 330ml</span><span class="units">1 UA</span>
+      </button>
+      <button class="drink-btn" onclick="addDrink('Vino 🍷',1.5)">
+        <span class="emoji">🍷</span><span class="name">Vino 150ml</span><span class="units">1.5 UA</span>
+      </button>
+      <button class="drink-btn" onclick="addDrink('Shot 🥃',1)">
+        <span class="emoji">🥃</span><span class="name">Shot</span><span class="units">1 UA</span>
+      </button>
+      <button class="drink-btn" onclick="addDrink('Cocktail 🍹',2)">
+        <span class="emoji">🍹</span><span class="name">Cocktail</span><span class="units">2 UA</span>
+      </button>
+      <button class="drink-btn" onclick="addDrink('Prosecco 🥂',1)">
+        <span class="emoji">🥂</span><span class="name">Prosecco</span><span class="units">1 UA</span>
+      </button>
+      <button class="drink-btn" onclick="addDrink('Chela grande 🍻',1.7)">
+        <span class="emoji">🍻</span><span class="name">Chela 500ml</span><span class="units">1.7 UA</span>
+      </button>
+    </div>
+    <button class="btn-water" id="btn-water" onclick="addWater()">💧 Tomé un vaso de agua</button>
+    <div id="tiempo-label"></div>
+  </div>
+
+  <!-- Emociones -->
+  <div class="card">
+    <div class="card-title">¿Cómo te sientes hoy?</div>
+    <p class="emotion-subtitle">Tu estado emocional influye en cómo te afecta el alcohol. Ser honesta contigo misma es parte de cuidarte. 💜</p>
+    <div class="emotion-grid">
+      <button class="emotion-btn" onclick="selectEmotion('feliz')"      id="em-feliz">      <span class="e-emoji">😊</span><span class="e-name">Feliz</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('ansiosa')"    id="em-ansiosa">    <span class="e-emoji">😰</span><span class="e-name">Ansiosa</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('triste')"     id="em-triste">     <span class="e-emoji">😔</span><span class="e-name">Triste</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('enojada')"    id="em-enojada">    <span class="e-emoji">😤</span><span class="e-name">Enojada</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('estresada')"  id="em-estresada">  <span class="e-emoji">😫</span><span class="e-name">Estresada</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('insegura')"   id="em-insegura">   <span class="e-emoji">😶</span><span class="e-name">Insegura</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('emocionada')" id="em-emocionada"> <span class="e-emoji">🤩</span><span class="e-name">Emocionada</span></button>
+      <button class="emotion-btn" onclick="selectEmotion('neutral')"    id="em-neutral">    <span class="e-emoji">😌</span><span class="e-name">Tranquila</span></button>
+    </div>
+    <div class="emotion-alert" id="emotion-alert">
+      <div class="ea-title" id="ea-title"></div>
+      <div class="ea-text"  id="ea-text"></div>
+      <span class="emotion-tip-badge" id="ea-badge"></span>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+    <div class="section-label">Registro de esta noche</div>
+    <div id="log-list"><div class="log-empty">Aquí aparecerán tus tragos 🌙</div></div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="btn-row">
+    <button class="btn-action" onclick="openSetup()">⚙️ Configurar</button>
+    <button class="btn-action" onclick="confirmDiscard()">🗑 Descartar</button>
+  </div>
+
+  <button class="btn-close-event" onclick="closeEvent()">✅ Cerrar evento y guardar</button>
+
+</div>
+
+<!-- ═══════════════ PÁGINA 2: HISTORIAL ═══════════════ -->
+<div class="page" id="page-history">
+  <div id="hist-container">
+    <div class="hist-empty">Aún no hay eventos guardados.<br><br>🌙 Registra tu primera noche<br>y aparecerá aquí.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ PÁGINA 3: MI VIAJE ═══════════════ -->
+<div class="page" id="page-trip">
+  <div id="trip-container">
+    <div class="hist-empty">Aún no hay datos de tu viaje.<br><br>📊 Guarda al menos un evento<br>para ver tu resumen.</div>
+  </div>
+</div>
+
+<!-- ── Tabs ── -->
+<nav class="tabs">
+  <button class="tab active" id="tab-night"   onclick="switchTab('night')">
+    <span class="tab-icon">🌙</span>Esta noche
+  </button>
+  <button class="tab"        id="tab-history" onclick="switchTab('history')">
+    <span class="tab-icon">📋</span>Historial
+  </button>
+  <button class="tab"        id="tab-trip"    onclick="switchTab('trip')">
+    <span class="tab-icon">📊</span>Mi viaje
+  </button>
+</nav>
+
+<!-- ── Modal alerta nivel ── -->
+<div class="modal-overlay" id="modal-alert">
+  <div class="modal">
+    <div class="modal-emoji" id="modal-emoji">⚠️</div>
+    <h2 id="modal-title">Atención</h2>
+    <p  id="modal-text"></p>
+    <button class="modal-btn"           onclick="closeModal('alert')">Entendido 💜</button>
+    <button class="modal-btn-secondary" onclick="closeModal('alert')">Ver mi estado</button>
+  </div>
+</div>
+
+<!-- ── Modal setup ── -->
+<div class="modal-overlay" id="modal-setup">
+  <div class="modal">
+    <div class="modal-emoji">🌙</div>
+    <h2>Configura tu noche</h2><br>
+    <label class="setup-label">¿A qué evento vas?</label>
+    <input class="setup-input" id="input-event" type="text" placeholder="Ej: Bar en Berlín, Feierabend…"/>
+    <label class="setup-label">Tu límite de unidades de alcohol (UA)</label>
+    <input class="setup-input" id="input-limit" type="number" placeholder="Recomendado: 4" min="1" max="15"/>
+    <button class="modal-btn"           onclick="saveSetup()">¡Listo, vamos! 🥂</button>
+    <button class="modal-btn-secondary" onclick="closeModal('setup')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ── Modal cerrar evento ── -->
+<div class="modal-overlay" id="modal-close">
+  <div class="modal">
+    <div class="modal-emoji">🎉</div>
+    <h2>¿Cerrar este evento?</h2>
+    <p id="modal-close-text"></p>
+    <button class="modal-btn"           onclick="confirmCloseEvent()">Guardar evento 💜</button>
+    <button class="modal-btn-secondary" onclick="closeModal('close')">Seguir en la noche</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATOS
+// ═══════════════════════════════════════════════════
+const LIMIT_DEFAULT = 4;
+
+let night = {
+  units: 0, limit: LIMIT_DEFAULT,
+  log: [], event: '', startTime: null, emotion: null,
+  alertShown: { amarillo:false, naranja:false, rojo:false }
+};
+
+let history = []; // array de eventos guardados
+
+function save() {
+  try {
+    localStorage.setItem('sofia_night',   JSON.stringify(night));
+    localStorage.setItem('sofia_history', JSON.stringify(history));
+  } catch(e){}
+}
+function load() {
+  try {
+    const n = localStorage.getItem('sofia_night');
+    const h = localStorage.getItem('sofia_history');
+    if (n) night   = JSON.parse(n);
+    if (h) history = JSON.parse(h);
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════
+//  LÓGICA SEMÁFORO
+// ═══════════════════════════════════════════════════
+function getLevel(u, lim) {
+  const r = u / lim;
+  if (r < 0.5)  return 'verde';
+  if (r < 0.75) return 'amarillo';
+  if (r < 1.0)  return 'naranja';
+  return 'rojo';
+}
+
+const LEVEL_COLOR = {
+  verde:'var(--green)', amarillo:'var(--yellow)',
+  naranja:'var(--orange)', rojo:'var(--red)'
+};
+const MESSAGES = {
+  verde:    { msg:'🟢 Todo bien, disfruta la noche',      consejo:'Estás dentro del límite. Recuerda hidratarte entre tragos.' },
+  amarillo: { msg:'🟡 Tomando conciencia',                consejo:'Ya vas a mitad de tu límite. Bebe agua, come algo y relaja el ritmo.' },
+  naranja:  { msg:'🟠 Vas llegando a tu límite',          consejo:'Estás cerca del límite que te pusiste. Considera parar o pedir agua.' },
+  rojo:     { msg:'🔴 Has superado tu límite',            consejo:'Sofía, llegaste a tu límite. Recuerda por qué creaste esta app. 💜' }
+};
+const ALERTS = {
+  amarillo: { emoji:'🌊', title:'¡Mitad del camino!',    text:'Ya tomaste la mitad de tu límite. Nada grave, solo toma conciencia. ¿Un vaso de agua antes del siguiente?' },
+  naranja:  { emoji:'⚠️', title:'Cerca de tu límite',   text:'Sofía, ya estás cerca del límite que tú misma te pusiste. Tú tienes el control. 💜' },
+  rojo:     { emoji:'🛑', title:'¡Para aquí!',           text:'Has superado tu límite. Recuerda que creaste esta app para cuidarte. Para ahí. 💜' }
+};
+
+// ═══════════════════════════════════════════════════
+//  RENDER NOCHE
+// ═══════════════════════════════════════════════════
+function renderNight() {
+  const level = getLevel(night.units, night.limit);
+  const color = LEVEL_COLOR[level];
+  const { msg, consejo } = MESSAGES[level];
+
+  ['verde','amarillo','naranja','rojo'].forEach(l =>
+    document.getElementById('dot-'+l).classList.toggle('active', l === level));
+
+  document.getElementById('estado-msg').style.color = color;
+  document.getElementById('estado-msg').textContent = msg;
+  document.getElementById('consejo').textContent = consejo;
+
+  document.getElementById('units-count').textContent = night.units.toFixed(1) + ' UA';
+  const pct = Math.min((night.units / night.limit)*100, 100);
+  const fill = document.getElementById('progress-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = color;
+
+  document.getElementById('event-name-header').textContent = night.event || 'Sin evento activo';
+
+  if (night.startTime) {
+    const mins = Math.floor((Date.now()-night.startTime)/60000);
+    const h = Math.floor(mins/60), m = mins%60;
+    document.getElementById('tiempo-label').textContent =
+      `Llevas ${h>0?h+'h ':''}${m}min en el evento`;
+  } else {
+    document.getElementById('tiempo-label').textContent = '';
+  }
+
+  // log
+  const list = document.getElementById('log-list');
+  if (!night.log.length) {
+    list.innerHTML = '<div class="log-empty">Aquí aparecerán tus tragos 🌙</div>';
+  } else {
+    list.innerHTML = [...night.log].reverse().map(item => `
+      <div class="log-item${item.type==='agua'?' agua':''}">
+        <div class="log-left">
+          <span style="font-size:1.1rem">${item.emoji}</span>
+          <div>
+            <div class="log-name">${item.name}</div>
+            <div class="log-time">${item.time}</div>
+          </div>
+        </div>
+        ${item.type!=='agua'
+          ? `<span class="log-units">+${item.units} UA</span>`
+          : '<span class="log-units" style="color:#60b8d0">💧</span>'}
+      </div>`).join('');
+  }
+
+  // alertas automáticas
+  if (!night.alertShown[level] && level !== 'verde') {
+    night.alertShown[level] = true;
+    const a = ALERTS[level];
+    document.getElementById('modal-emoji').textContent = a.emoji;
+    document.getElementById('modal-title').textContent = a.title;
+    document.getElementById('modal-text').textContent  = a.text;
+    document.getElementById('modal-alert').classList.add('show');
+  }
+
+  save();
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER HISTORIAL
+// ═══════════════════════════════════════════════════
+const LEVEL_LABEL = { verde:'Bien 🟢', amarillo:'Precaución 🟡', naranja:'Límite 🟠', rojo:'Excedida 🔴' };
+
+function renderHistory() {
+  const c = document.getElementById('hist-container');
+  if (!history.length) {
+    c.innerHTML = '<div class="hist-empty">Aún no hay eventos guardados.<br><br>🌙 Registra tu primera noche<br>y aparecerá aquí.</div>';
+    return;
+  }
+  c.innerHTML = [...history].reverse().map((ev, i) => `
+    <div class="hist-item">
+      <div class="hist-top">
+        <div>
+          <div class="hist-name">${ev.event || 'Evento sin nombre'}</div>
+          <div class="hist-date">${ev.date} · ${ev.city||'Europa'}</div>
+        </div>
+        <div class="hist-dot ${ev.maxLevel}"></div>
+      </div>
+      <div class="hist-stats">
+        <div class="hist-stat">UA totales: <span>${ev.units.toFixed(1)}</span></div>
+        <div class="hist-stat">Límite: <span>${ev.limit}</span></div>
+        <div class="hist-stat">Tragos: <span>${ev.drinks}</span></div>
+        <div class="hist-stat">Aguas: <span>${ev.waters}</span></div>
+      </div>
+      ${ev.emotion ? `<div class="hist-emotion">Estado anímico: ${EMOTION_EMOJIS[ev.emotion]||''} ${ev.emotion}</div>` : ''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER VIAJE
+// ═══════════════════════════════════════════════════
+function renderTrip() {
+  const c = document.getElementById('trip-container');
+  if (!history.length) {
+    c.innerHTML = '<div class="hist-empty">Aún no hay datos de tu viaje.<br><br>📊 Guarda al menos un evento<br>para ver tu resumen.</div>';
+    return;
+  }
+
+  const totalUA     = history.reduce((s,e)=>s+e.units,0);
+  const avgUA       = totalUA/history.length;
+  const totalDrinks = history.reduce((s,e)=>s+e.drinks,0);
+  const totalWaters = history.reduce((s,e)=>s+e.waters,0);
+  const levelCount  = {verde:0,amarillo:0,naranja:0,rojo:0};
+  history.forEach(e=>levelCount[e.maxLevel]++);
+
+  // noche más intensa
+  const worst = history.reduce((a,b)=>a.units>b.units?a:b);
+  // noche más moderada
+  const best  = history.reduce((a,b)=>a.units<b.units?a:b);
+
+  // insight
+  const highRisk = history.filter(e=>['naranja','rojo'].includes(e.maxLevel));
+  const riskEmotions = highRisk.map(e=>e.emotion).filter(Boolean);
+
+  let insight = '';
+  if (riskEmotions.length) {
+    const freq = {};
+    riskEmotions.forEach(em=>freq[em]=(freq[em]||0)+1);
+    const topEm = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0];
+    insight = `En las noches donde tomaste de más, con frecuencia te sentías <strong>${topEm[0]}</strong>. Reconocer ese patrón es un paso enorme. 💜`;
+  } else if (history.length >= 2) {
+    insight = `Llevas ${history.length} eventos registrados y en todos te mantuviste dentro de lo que planeabas. ¡Eso dice mucho de ti! 🌟`;
+  }
+
+  const maxUA = Math.max(...history.map(e=>e.units));
+
+  c.innerHTML = `
+    <div class="trip-hero">
+      <h2>Tu viaje en Europa 🌍</h2>
+      <p>${history.length} evento${history.length!==1?'s':''} registrado${history.length!==1?'s':''}</p>
+      <div class="trip-stats">
+        <div class="trip-stat">
+          <div class="ts-val">${totalUA.toFixed(1)}</div>
+          <div class="ts-label">UA totales</div>
+        </div>
+        <div class="trip-stat">
+          <div class="ts-val">${avgUA.toFixed(1)}</div>
+          <div class="ts-label">Promedio por noche</div>
+        </div>
+        <div class="trip-stat">
+          <div class="ts-val">${totalDrinks}</div>
+          <div class="ts-label">Tragos totales</div>
+        </div>
+        <div class="trip-stat">
+          <div class="ts-val">${totalWaters}</div>
+          <div class="ts-label">Aguas tomadas 💧</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">UA por evento</div>
+      <div class="trend-bars">
+        ${history.map(ev=>{
+          const pct = maxUA>0 ? (ev.units/maxUA)*100 : 0;
+          const lv  = ev.maxLevel;
+          const col = LEVEL_COLOR[lv];
+          return `<div class="trend-bar-row">
+            <div class="trend-bar-label">${ev.event||'Evento'}</div>
+            <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+            <div class="trend-bar-val">${ev.units.toFixed(1)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Distribución de niveles</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+        ${Object.entries(levelCount).filter(([,v])=>v>0).map(([k,v])=>`
+          <div style="background:var(--bg);border-radius:10px;padding:8px 14px;font-size:0.78rem">
+            ${LEVEL_LABEL[k]}: <span style="color:var(--accent);font-weight:500">${v}</span>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:12px;font-size:0.75rem;color:var(--muted);line-height:1.6">
+        🏆 Noche más moderada: <strong style="color:var(--text)">${best.event||'Evento'}</strong> (${best.units.toFixed(1)} UA)<br>
+        ⚠️ Noche más intensa: <strong style="color:var(--text)">${worst.event||'Evento'}</strong> (${worst.units.toFixed(1)} UA)
+      </div>
+    </div>
+
+    ${insight ? `<div class="insight-card"><div class="ic-title">💡 Patrón detectado</div><div class="ic-text">${insight}</div></div>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  ACCIONES NOCHE
+// ═══════════════════════════════════════════════════
+function addDrink(name, units) {
+  if (!night.startTime) night.startTime = Date.now();
+  const parts = name.split(' ');
+  const emoji = parts[parts.length-1];
+  night.units = Math.round((night.units+units)*10)/10;
+  night.log.push({
+    name, emoji, units,
+    time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),
+    type:'drink'
+  });
+  renderNight();
+}
+
+function addWater() {
+  if (!night.startTime) night.startTime = Date.now();
+  night.log.push({
+    name:'Agua', emoji:'💧', units:0,
+    time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),
+    type:'agua'
+  });
+  renderNight();
+  const btn = document.getElementById('btn-water');
+  btn.textContent = '✅ ¡Bien hecho, Sofía!';
+  setTimeout(()=>btn.textContent='💧 Tomé un vaso de agua', 1600);
+}
+
+function closeEvent() {
+  if (!night.units && !night.log.length) {
+    alert('Aún no has registrado nada esta noche.');
+    return;
+  }
+  const level = getLevel(night.units, night.limit);
+  const drinks = night.log.filter(l=>l.type==='drink').length;
+  const waters = night.log.filter(l=>l.type==='agua').length;
+  document.getElementById('modal-close-text').innerHTML =
+    `<strong>${night.event||'Este evento'}</strong><br>${night.units.toFixed(1)} UA · ${drinks} trago${drinks!==1?'s':''} · ${waters} agua${waters!==1?'s':''}<br><br>Se guardará en tu historial de viaje.`;
+  document.getElementById('modal-close').classList.add('show');
+}
+
+function confirmCloseEvent() {
+  const level  = getLevel(night.units, night.limit);
+  const drinks = night.log.filter(l=>l.type==='drink').length;
+  const waters = night.log.filter(l=>l.type==='agua').length;
+  const now    = new Date();
+  history.push({
+    event:    night.event || 'Evento',
+    date:     now.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'}),
+    city:     '',
+    units:    night.units,
+    limit:    night.limit,
+    maxLevel: level,
+    drinks, waters,
+    emotion:  night.emotion,
+    timestamp: Date.now()
+  });
+  night = {
+    units:0, limit:night.limit, log:[], event:'',
+    startTime:null, emotion:null,
+    alertShown:{amarillo:false,naranja:false,rojo:false}
+  };
+  document.querySelectorAll('.emotion-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('emotion-alert').classList.remove('show');
+  closeModal('close');
+  save();
+  renderNight();
+  renderHistory();
+  renderTrip();
+  switchTab('history');
+}
+
+function confirmDiscard() {
+  if (!night.log.length) return;
+  if (!confirm('¿Descartar el registro de esta noche sin guardar?')) return;
+  night = {
+    units:0, limit:night.limit, log:[], event:'',
+    startTime:null, emotion:null,
+    alertShown:{amarillo:false,naranja:false,rojo:false}
+  };
+  document.querySelectorAll('.emotion-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('emotion-alert').classList.remove('show');
+  renderNight();
+}
+
+// ═══════════════════════════════════════════════════
+//  EMOCIONES
+// ═══════════════════════════════════════════════════
+const EMOTION_EMOJIS = {
+  feliz:'😊',ansiosa:'😰',triste:'😔',enojada:'😤',
+  estresada:'😫',insegura:'😶',emocionada:'🤩',neutral:'😌'
+};
+const EMOTION_DATA = {
+  feliz:      { title:'😊 ¡Buena vibra!', text:'La euforia puede hacer que quieras seguir sin medir. Disfruta, pero lleva la cuenta.', badge:'Riesgo: Querer no parar' },
+  ansiosa:    { title:'⚠️ Cuidado: ansiedad + alcohol', text:'El alcohol puede parecer que calma la ansiedad — pero la intensifica después. Considera reducir tu límite esta noche.', badge:'🔴 Riesgo alto · Considera reducir tu límite' },
+  triste:     { title:'💜 Sofía, ojo con esto', text:'Tomar cuando estás triste puede llevar a excesos que empeorarán cómo te sientes mañana. El alcohol es depresor — te hundirá más.', badge:'🔴 Riesgo alto · El alcohol amplifica la tristeza' },
+  enojada:    { title:'😤 Enojo + alcohol = riesgo real', text:'Cuando estás enojada, el alcohol baja el filtro y puede llevarte a hacer cosas que lamentarás. Espera a que baje la emoción.', badge:'🔴 Riesgo alto · Reacciones impulsivas' },
+  estresada:  { title:'😫 El estrés afecta cómo toleras el alcohol', text:'Con estrés acumulado te intoxicas más rápido de lo normal. Ve más despacio esta noche.', badge:'🟡 Riesgo medio · Ve más lento' },
+  insegura:   { title:'😶 Ojo: beber para "soltarse"', text:'Si necesitas tomar para sentirte bien en el ambiente, eso es una señal. El alcohol no resuelve la inseguridad, solo la enmascara.', badge:'🟡 Riesgo medio · No tomes para encajar' },
+  emocionada: { title:'🤩 ¡Que no se te vaya la emoción!', text:'La adrenalina puede hacer que subestimes cuánto has tomado. Revisa tu contador seguido esta noche.', badge:'Riesgo: Perder la cuenta' },
+  neutral:    { title:'😌 Noche tranquila', text:'Estás en el mejor estado para disfrutar con moderación. Mantén ese equilibrio.', badge:'Estado ideal para una noche consciente' }
+};
+
+function selectEmotion(key) {
+  night.emotion = key;
+  document.querySelectorAll('.emotion-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('em-'+key).classList.add('selected');
+  const d = EMOTION_DATA[key];
+  document.getElementById('ea-title').textContent = d.title;
+  document.getElementById('ea-text').textContent  = d.text;
+  document.getElementById('ea-badge').textContent = d.badge;
+  document.getElementById('emotion-alert').classList.add('show');
+  save();
+}
+
+// ═══════════════════════════════════════════════════
+//  SETUP / MODALES / TABS
+// ═══════════════════════════════════════════════════
+function openSetup() {
+  document.getElementById('input-event').value = night.event||'';
+  document.getElementById('input-limit').value = night.limit||LIMIT_DEFAULT;
+  document.getElementById('modal-setup').classList.add('show');
+}
+function saveSetup() {
+  const ev  = document.getElementById('input-event').value.trim();
+  const lim = parseFloat(document.getElementById('input-limit').value);
+  if (ev) night.event = ev;
+  if (!isNaN(lim)&&lim>0) night.limit = lim;
+  night.alertShown = {amarillo:false,naranja:false,rojo:false};
+  closeModal('setup');
+  renderNight();
+}
+function closeModal(id) {
+  document.getElementById('modal-'+id).classList.remove('show');
+}
+
+function switchTab(tab) {
+  ['night','history','trip'].forEach(t=>{
+    document.getElementById('page-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab==='history') renderHistory();
+  if (tab==='trip')    renderTrip();
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+setInterval(()=>{ if(night.startTime) renderNight(); }, 60000);
+
+load();
+if (night.emotion) {
+  const btn = document.getElementById('em-'+night.emotion);
+  if (btn) {
+    btn.classList.add('selected');
+    const d = EMOTION_DATA[night.emotion];
+    document.getElementById('ea-title').textContent = d.title;
+    document.getElementById('ea-text').textContent  = d.text;
+    document.getElementById('ea-badge').textContent = d.badge;
+    document.getElementById('emotion-alert').classList.add('show');
+  }
+}
+renderNight();
+</script>
+</body>
+</html>
